@@ -1,8 +1,10 @@
+using AzureToolKit2.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +23,8 @@ namespace AzureToolKit2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
+            var connectionString = @"Server=tcp:azuretoolkit-ktms88.database.windows.net,1433;Initial Catalog=azuretoolkit2;Persist Security Info=False;User ID=ktms88;Password=Mhc1s1g7;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+            services.AddDbContext<AzureToolkitContext>(options => options.UseSqlServer(connectionString));
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {

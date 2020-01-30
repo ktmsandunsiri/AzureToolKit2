@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AzureToolKit2.Models;
+using AzureToolKit2.Models.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.WindowsAzure.Storage;
@@ -16,8 +17,10 @@ namespace AzureToolKit2.Controllers
     public class ImagesController : ControllerBase
     {
         private CloudBlobContainer _container;
-        public ImagesController()
+        private AzureToolkitContext _context;
+        public ImagesController(AzureToolkitContext context)
         {
+            this._context = context;
             CloudStorageAccount storageAccount = new CloudStorageAccount(
                 new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(
                         "azurestoragethilina",
@@ -36,6 +39,23 @@ namespace AzureToolKit2.Controllers
             var stream = aResponse.GetResponseStream();
             await blockBlob.UploadFromStreamAsync(stream);
             stream.Dispose();
+
+            //Save metadata
+            var savedImage = new SavedImage();
+            savedImage.UserId = request.UserId;
+            savedImage.Description = request.Description;
+            savedImage.StorageUrl = blockBlob.Uri.ToString();
+            savedImage.Tags = new List<SavedImageTag>();
+
+            foreach (var tag in request.Tags)
+            {
+                savedImage.Tags.Add(new SavedImageTag() { Tag = tag });
+            }
+
+            _context.Add(savedImage);
+            _context.SaveChanges();
+
+
             return Ok();
         }
     }
