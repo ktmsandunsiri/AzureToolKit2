@@ -30,33 +30,48 @@ namespace AzureToolKit2.Controllers
             _container = blobClient.GetContainerReference("savedimages");
         }
 
+        [HttpGet("{userId}")]
+        public IActionResult GetImages(string userID)
+        {
+            var images = _context.SavedImages.Where(image => image.UserId == userID);
+            return Ok(images);
+        }
+
         [HttpPost]
         public async Task<IActionResult> PostImage([FromBody]ImagePostRequest request)
         {
-            CloudBlockBlob blockBlob = _container.GetBlockBlobReference($"{request.Id}.{request.EncodingFormat}");
-            HttpWebRequest aRequest = (HttpWebRequest)WebRequest.Create(request.URL);
-            HttpWebResponse aResponse = (await aRequest.GetResponseAsync()) as HttpWebResponse;
-            var stream = aResponse.GetResponseStream();
-            await blockBlob.UploadFromStreamAsync(stream);
-            stream.Dispose();
-
-            //Save metadata
-            var savedImage = new SavedImage();
-            savedImage.UserId = request.UserId;
-            savedImage.Description = request.Description;
-            savedImage.StorageUrl = blockBlob.Uri.ToString();
-            savedImage.Tags = new List<SavedImageTag>();
-
-            foreach (var tag in request.Tags)
+            try
             {
-                savedImage.Tags.Add(new SavedImageTag() { Tag = tag });
+                CloudBlockBlob blockBlob = _container.GetBlockBlobReference($"{request.Id}.{request.EncodingFormat}");
+                HttpWebRequest aRequest = (HttpWebRequest)WebRequest.Create(request.URL);
+                HttpWebResponse aResponse = (await aRequest.GetResponseAsync()) as HttpWebResponse;
+                var stream = aResponse.GetResponseStream();
+                await blockBlob.UploadFromStreamAsync(stream);
+                stream.Dispose();
+
+                //Save metadata
+                var savedImage = new SavedImage();
+                savedImage.UserId = request.UserId;
+                savedImage.Description = request.Description;
+                savedImage.StorageUrl = blockBlob.Uri.ToString();
+                savedImage.Tags = new List<SavedImageTag>();
+
+                foreach (var tag in request.Tags)
+                {
+                    savedImage.Tags.Add(new SavedImageTag() { Tag = tag });
+                }
+
+                _context.Add(savedImage);
+                _context.SaveChanges();
+
+
+                return Ok();
             }
-
-            _context.Add(savedImage);
-            _context.SaveChanges();
-
-
-            return Ok();
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+          
         }
     }
 }

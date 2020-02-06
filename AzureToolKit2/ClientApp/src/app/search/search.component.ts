@@ -26,6 +26,10 @@ export class SearchComponent implements OnInit {
 
   ngOnInit() {
     this.userService.getUser().subscribe(user => this.user = user );
+    // this.user = new User();
+    // this.user.firstName = "thilina";
+    // this.user.lastName = "sandunsiri";
+    // this.user.userId = "20";
   }
   search(searchTerm: string) {
     this.searchResults = null;
