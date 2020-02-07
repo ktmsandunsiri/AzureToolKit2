@@ -12,7 +12,8 @@ import { SavedImage } from '../common/models/savedImage';
 export class GalaryComponent implements OnInit {
   user: User;
   savedImages: SavedImage[] | null = null;
-
+  searchResults: SavedImage[] | null;
+  
   constructor(private userService: UserService, private azureToolkitService: AzureToolkitService) { }
 
   ngOnInit() {
@@ -31,5 +32,13 @@ export class GalaryComponent implements OnInit {
     //     this.savedImages = images;
     // })
   }
+
+  search(searchTerm: string) {
+    this.searchResults = null;
+
+    this.azureToolkitService.searchImage(this.user.userId, searchTerm).subscribe(result => {
+        this.searchResults = result;
+    });
+}
 
 }

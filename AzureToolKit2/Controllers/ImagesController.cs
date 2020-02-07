@@ -7,6 +7,8 @@ using AzureToolKit2.Models;
 using AzureToolKit2.Models.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -35,6 +37,19 @@ namespace AzureToolKit2.Controllers
         {
             var images = _context.SavedImages.Where(image => image.UserId == userID);
             return Ok(images);
+        }
+
+        [HttpGet("search/{userId}/{term}")]
+        public IActionResult SearchImages(string userId, string term)
+        {
+            string searchServiceName = "azuretoolkitsearch-thilina";
+            string queryApiKey = "84355D3AB6B1027BEFD0442C3876F5C2";
+
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "desctiption", new SearchCredentials(queryApiKey));
+            SearchParameters parameters = new SearchParameters() { Filter = $"UserId eq '{userId}'" };
+            DocumentSearchResult<SavedImage> results = indexClient.Documents.Search<SavedImage>(term, parameters);
+
+            return Ok(results.Results.Select(r => r.Document));
         }
 
         [HttpPost]
